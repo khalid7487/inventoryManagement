@@ -5,6 +5,8 @@
  */
 package test24;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author KHALID
@@ -16,6 +18,7 @@ public class Inventory extends javax.swing.JFrame {
      */
     public Inventory() {
         initComponents();
+        ProductController.loadCombo(cmbProduct);
     }
 
     /**
@@ -62,6 +65,7 @@ public class Inventory extends javax.swing.JFrame {
 
         jLabel6.setText("Date:");
 
+        cmbProduct.setEditable(true);
         cmbProduct.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -118,6 +122,11 @@ public class Inventory extends javax.swing.JFrame {
         );
 
         btnPurchase.setText("Purchase");
+        btnPurchase.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPurchaseActionPerformed(evt);
+            }
+        });
 
         btnSale.setText("Sale");
 
@@ -182,6 +191,18 @@ public class Inventory extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnPurchaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPurchaseActionPerformed
+        if(cmbProduct.getSelectedIndex()<0){
+            ProductController.savePname(cmbProduct.getSelectedItem().toString());
+        }
+        boolean bool=ProductController.savePurchase(cmbProduct.getSelectedItem().toString(),
+                txtPrice.getText(), txtDate.getText(), txtqty.getText());
+        if(!bool){
+            JOptionPane.showMessageDialog(rootPane, "Purchase saved!!");
+            ProductController.loadCombo(cmbProduct);
+        }
+    }//GEN-LAST:event_btnPurchaseActionPerformed
 
     /**
      * @param args the command line arguments
