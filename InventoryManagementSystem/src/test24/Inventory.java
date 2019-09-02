@@ -5,6 +5,10 @@
  */
 package test24;
 
+import dao.DatabaseHelper;
+import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import javax.swing.JOptionPane;
 
 /**
@@ -67,6 +71,11 @@ public class Inventory extends javax.swing.JFrame {
 
         cmbProduct.setEditable(true);
         cmbProduct.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbProduct.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cmbProductItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -129,6 +138,11 @@ public class Inventory extends javax.swing.JFrame {
         });
 
         btnSale.setText("Sale");
+        btnSale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaleActionPerformed(evt);
+            }
+        });
 
         btnClear.setText("Clear");
 
@@ -184,25 +198,79 @@ public class Inventory extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 108, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnPurchaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPurchaseActionPerformed
-        if(cmbProduct.getSelectedIndex()<0){
+        if (cmbProduct.getSelectedIndex() < 0) {
             ProductController.savePname(cmbProduct.getSelectedItem().toString());
         }
-        boolean bool=ProductController.savePurchase(cmbProduct.getSelectedItem().toString(),
+        boolean bool = ProductController.savePurchase(cmbProduct.getSelectedItem().toString(),
                 txtPrice.getText(), txtDate.getText(), txtqty.getText());
-        if(!bool){
+        if (!bool) {
             JOptionPane.showMessageDialog(rootPane, "Purchase saved!!");
             ProductController.loadCombo(cmbProduct);
+            clear();
         }
     }//GEN-LAST:event_btnPurchaseActionPerformed
+
+    private void btnSaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaleActionPerformed
+        boolean bool = ProductController.saveSale(cmbProduct.getSelectedItem().toString(),
+                txtPrice.getText(), txtDate.getText(), txtqty.getText());
+        if (!bool) {
+            JOptionPane.showMessageDialog(rootPane, "Sale saved!!");
+            ProductController.loadCombo(cmbProduct);
+            clear();
+        }
+    }//GEN-LAST:event_btnSaleActionPerformed
+
+    private void cmbProductItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbProductItemStateChanged
+        if (cmbProduct.getSelectedIndex() > 0) {
+            Connection con = null;
+            CallableStatement csmt = null;
+            ResultSet rs = null;
+            try {
+                con = DatabaseHelper.getConnection();
+                csmt = con.prepareCall("{?=call get_product_QTY(?)}");
+                csmt.registerOutParameter(1, java.sql.Types.INTEGER);
+                csmt.setString(2, cmbProduct.getSelectedItem().toString());
+                csmt.execute();
+                int output = csmt.getInt(1);
+                lblqty.setText(String.valueOf(output));
+
+                //avg price
+                csmt = con.prepareCall("{CALL avg_price(get_product_id(?))}");
+                csmt.setString(1, cmbProduct.getSelectedItem().toString());
+                csmt.execute();
+                rs = csmt.getResultSet();
+                while (rs.next()) {
+                    lblPrice.setText(rs.getString(1));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    con.close();
+                    rs.close();
+                    csmt.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }//GEN-LAST:event_cmbProductItemStateChanged
+
+    private void clear() {
+        cmbProduct.setSelectedIndex(0);
+        lblPrice.setText("");
+        lblqty.setText("");
+        txtDate.setText("");
+        txtqty.setText("");
+        txtPrice.setText("");
+    }
 
     /**
      * @param args the command line arguments
