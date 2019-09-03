@@ -145,6 +145,11 @@ public class Inventory extends javax.swing.JFrame {
         });
 
         btnClear.setText("Clear");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -262,6 +267,10 @@ public class Inventory extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_cmbProductItemStateChanged
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+       clear();
+    }//GEN-LAST:event_btnClearActionPerformed
 
     private void clear() {
         cmbProduct.setSelectedIndex(0);
